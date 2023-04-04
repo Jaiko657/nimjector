@@ -5,7 +5,7 @@ A dive into shellcode injection and EDR evasion techniques in nim (but with a pu
 ```
 root/
 |__src/
-   |__main.nim              # Entry point of the application
+   |nimjector.nim              # Entry point of the application
    |__loader/
       |__loader.nim         # Implementation of the shell loader
       |__injector.nim       # Implementation of the shell injector
