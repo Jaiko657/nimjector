@@ -1,4 +1,4 @@
 nimcache/
 nimblecache/
 htmldocs/
-*.exe
+src/nimjector.exe
